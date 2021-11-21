@@ -181,15 +181,14 @@ def streamCSVFile(tcp_connection, input_file):    # stream a CSV file to Spark
     # loop through batches of size batch_size lines
     for i in tqdm(range(0, len(values)-batch_size+2, batch_size)):
         send_data = values[i:i+batch_size]  # load batch of rows
-        payload = list()    # create a payload
+        payload = dict()    # create a payload
         # iterate over the batch
         for mini_batch_index in range(len(send_data)):
-            d = dict()  # create a record
+            payload[mini_batch_index] = dict()  # create a record
             # iterate over the features
             for feature_index in range(len(send_data[0])):
                 # add the feature to the record
-                d[f'feature{feature_index}'] = send_data[mini_batch_index][feature_index]
-            payload.append(d)
+                payload[mini_batch_index][f'feature{feature_index}'] = send_data[mini_batch_index][feature_index]
         # print(payload)    # uncomment to see the payload being sent
         # encode the payload and add a newline character (do not forget the newline in your dataset)
         send_batch = (json.dumps(payload) + '\n').encode()
