@@ -15,7 +15,7 @@ import pickle
 # from nltk.corpus import stopwords
 nltk.download('stopwords')
 
-hv = HashingVectorizer(n_features=2**5, alternate_sign=False)
+hv = HashingVectorizer(n_features=2**12, alternate_sign=False)
 nb_filepath = './models/nb.sav'
 sgd_filepath = './models/sgd.sav'
 
@@ -50,10 +50,10 @@ def preprocess(data):
 def train_nb(tweets, tweets_test, y, y_test):
     nb_file = open(nb_filepath,'rb')
     nb = pickle.load(nb_file)
-    nb.partial_fit(tweets, y)
+    nb.partial_fit(tweets, y, classes = np.unique(y_test))
     score = nb.score(tweets_test, y_test)
     print(f'Batch accuracy = {score}')
-    nb.partial_fit(tweets_test, y_test) #cross validation lol
+    nb.partial_fit(tweets_test, y_test, classes = np.unique(y_test)) #cross validation lol
     nb_file.close()
     nb_file = open(nb_filepath, 'wb')
     pickle.dump(nb, nb_file)
