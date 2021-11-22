@@ -64,6 +64,34 @@ def train_nb(tweets, tweets_test, y, y_test):
     nb_file.close()
 
 
+def train_sgd(tweets, tweets_test, y, y_test):
+    sgd_file = open(sgd_filepath, 'rb')
+    sgd = pickle.load(sgd_file)
+    sgd.partial_fit(tweets, y, classes=np.unique(y_test))
+    score = sgd.score(tweets_test, y_test)
+    print(f'Batch accuracy = {score}')
+    sgd.partial_fit(tweets_test, y_test, classes=np.unique(
+        y_test))  # cross validation lol
+    sgd_file.close()
+    sgd_file = open(sgd_filepath, 'wb')
+    pickle.dump(sgd, sgd_file)
+    sgd_file.close()
+
+
+def train_pa(tweets, tweets_test, y, y_test):
+    pa_file = open(pa_filepath, 'rb')
+    pa = pickle.load(pa_file)
+    pa.partial_fit(tweets, y, classes=np.unique(y_test))
+    score = pa.score(tweets_test, y_test)
+    print(f'Batch accuracy = {score}')
+    pa.partial_fit(tweets_test, y_test, classes=np.unique(
+        y_test))  # cross validation lol
+    pa_file.close()
+    pa_file = open(nb_filepath, 'wb')
+    pickle.dump(pa, pa_file)
+    pa_file.close()
+
+
 def process_rdd(rdd):
     df = make_list_json(rdd)
     if df is not None:
@@ -75,7 +103,7 @@ def process_rdd(rdd):
         tweets, tweets_test, y, y_test = train_test_split(
             tweets, labels, test_size=0.2, random_state=42)
         print('Preprocessing Done')
-        train_nb(tweets, tweets_test, y, y_test)
+        train_pa(tweets, tweets_test, y, y_test)
 
 
 sc = SparkContext("local[2]", "name")

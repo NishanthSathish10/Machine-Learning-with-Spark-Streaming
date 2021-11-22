@@ -8,7 +8,7 @@ op = sys.argv[1]
 random.seed(42)
 nb = MultinomialNB()
 sgd = SGDClassifier()
-pa = PassiveAggressiveClassifier(C=4)
+pa = PassiveAggressiveClassifier()
 nb_filepath = "models/nb.sav"
 sgd_filepath = "models/sgd.sav"
 pa_filepath = "models/pa.sav"
