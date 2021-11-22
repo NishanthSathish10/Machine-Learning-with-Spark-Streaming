@@ -9,9 +9,15 @@ from pyspark.sql import SparkSession
 from pyspark.sql import SQLContext
 from pyspark.sql import Row
 from pyspark.streaming import StreamingContext
+from sklearn.feature_extraction.text import HashingVectorizer
+from sklearn.model_selection import train_test_split
+import pickle
 # from nltk.corpus import stopwords
 nltk.download('stopwords')
 
+hv = HashingVectorizer(n_features=2**5, alternate_sign=False)
+nb_filepath = './models/nb.sav'
+sgd_filepath = './models/sgd.sav'
 
 def make_list_json(rdd):
     taken = rdd.collect()
@@ -41,15 +47,28 @@ def preprocess(data):
     # replace data with cleaned data
     return cleaned.join(final)
 
+def train_nb(tweets, tweets_test, y, y_test):
+    nb_file = open(nb_filepath,'rb')
+    nb = pickle.load(nb_file)
+    nb.partial_fit(tweets, y)
+    score = nb.score(tweets_test, y_test)
+    print(f'Batch accuracy = {score}')
+    nb.partial_fit(tweets_test, y_test) #cross validation lol
+    nb_file.close()
+    nb_file = open(nb_filepath, 'wb')
+    pickle.dump(nb, nb_file)
+    nb_file.close()
 
 def process_rdd(rdd):
     df = make_list_json(rdd)
     if df is not None:
         tweets = np.array(df.select('feature1').collect())
         tweets = np.array([preprocess(i[0]) for i in tweets])
-        labels = np.array([i[0]
-                          for i in list(df.select('feature0').collect())])
-        print([tweets, labels])
+        labels = np.array([i[0] for i in list(df.select('feature0').collect())])
+        tweets = hv.fit_transform(tweets)
+        tweets, tweets_test, y, y_test = train_test_split(tweets, labels, test_size=0.2, random_state=42)
+        print('Preprocessing Done')
+        train_nb(tweets, tweets_test, y, y_test)
 
 
 sc = SparkContext("local[2]", "name")
@@ -61,5 +80,5 @@ dataStream = ssc.socketTextStream("localhost", 6100)
 dataStream.foreachRDD(process_rdd)
 
 ssc.start()
-ssc.awaitTermination(120)
+ssc.awaitTermination(900)
 ssc.stop()
