@@ -21,3 +21,4 @@ if op == 'pa':
 if op == "all":
     pickle.dump(nb, open(nb_filepath, 'wb'))
     pickle.dump(sgd, open(sgd_filepath, 'wb'))
+    pickle.dump(pa, open(pa_filepath,'wb'))
