@@ -22,7 +22,10 @@ hv = HashingVectorizer(n_features=2**18, alternate_sign=False)
 nb_filepath = '/home/pes1ug19cs304/Desktop/Project/models/nb.sav'
 sgd_filepath = '/home/pes1ug19cs304/Desktop/Project/models/sgd.sav'
 pa_filepath = '/home/pes1ug19cs304/Desktop/Project/models/pa.sav'
-data_filepath='/home/pes1ug19cs304/Desktop/Project/data212.csv'
+data_filepath='/home/pes1ug19cs304/Desktop/Project/data/data218.csv'
+
+#create a csv file with the following as the first line for data collection
+#batch_no,classifier,accuracy,recall_0,recall_4,precision_0,precision_4,f1_0,f1_4,batch_size
 
 batch_no=1
 batch_size=10000
@@ -132,7 +135,7 @@ def train_pa(tweets, tweets_test, y, y_test):
     pa.partial_fit(tweets_test, y_test, classes=np.unique(
         y_test))  # cross validation lol
     pa_file.close()
-    pa_file = open(nb_filepath, 'wb')
+    pa_file = open(pa_filepath, 'wb')
     pickle.dump(pa, pa_file)
     pa_file.close()
 
@@ -162,5 +165,5 @@ dataStream = ssc.socketTextStream("localhost", 6100)
 dataStream.foreachRDD(process_rdd)
 
 ssc.start()
-ssc.awaitTermination(900)
+ssc.awaitTermination(int((1520000/batch_size)*5)+60)
 ssc.stop()
